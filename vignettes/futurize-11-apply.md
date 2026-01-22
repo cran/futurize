@@ -1,0 +1,121 @@
+<!--
+%\VignetteIndexEntry{Parallelize base-R apply functions}
+%\VignetteAuthor{Henrik Bengtsson}
+%\VignetteKeyword{R}
+%\VignetteKeyword{package}
+%\VignetteKeyword{vignette}
+%\VignetteKeyword{handlers}
+%\VignetteEngine{futurize::selfonly}
+-->
+
+<div class="logos">
+<img src="../man/figures/r-base-logo.svg" alt="The base-R logo">
+<span>+</span>
+<img src="../man/figures/futurize-logo.png" alt="The 'futurize' hexlogo">
+<span>=</span>
+<img src="../man/figures/future-logo.png" alt="The 'future' logo">
+</div>
+
+The **futurize** package allows you to easily turn sequential code
+into parallel code by piping the sequential code to the `futurize()`
+function. Easy!
+
+
+# TL;DR
+
+```r
+library(futurize)
+plan(multisession)
+
+slow_fcn <- function(x) {
+  Sys.sleep(0.1)  # emulate work
+  x^2
+}
+
+xs <- 1:1000
+ys <- lapply(xs, slow_fcn) |> futurize()
+```
+
+
+# Introduction
+
+This vignette demonstrates how to use this approach to parallelize
+functions such as `lapply()`, `tapply()`, `apply()`, and `replicate()`
+in the **base** package, and `kernapply()` in the **stats**
+package. For example, consider the base R `lapply()` function, which
+is commonly used to apply a function to the elements of a vector or a
+list, as in:
+
+```r
+xs <- 1:1000
+ys <- lapply(xs, slow_fcn)
+```
+
+Here `lapply()` evaluates sequentially, but we can easily make it
+evaluate in parallel, by using:
+
+```r
+library(futurize)
+ys <- lapply(xs, slow_fcn) |> futurize()
+```
+
+This will distribute the calculations across the available parallel
+workers, given that we have set parallel workers, e.g.
+
+```r
+plan(multisession)
+```
+
+The built-in `multisession` backend parallelizes on your local
+computer and it works on all operating systems. There are [other
+parallel backends] to choose from, including alternatives to
+parallelize locally as well as distributed across remote machines,
+e.g.
+
+```r
+plan(future.mirai::mirai_multisession)
+```
+
+and
+
+```r
+plan(future.batchtools::batchtools_slurm)
+```
+
+
+## Kernel smoothing
+
+```r
+library(futurize)
+plan(multisession)
+
+library(stats)
+
+xs <- datasets::EuStockMarkets
+k50 <- kernel("daniell", 50)
+xs_smooth <- kernapply(xs, k = k50) |> futurize()
+```
+
+
+
+# Supported Functions
+
+The `futurize()` function supports parallelization of the common base
+R functions. The following  **base** package functions are supported:
+
+ * `lapply()`, `vapply()`, `sapply()`, `tapply()`
+ * `mapply()`, `.mapply()`, `Map()`
+ * `eapply()`
+ * `apply()`
+ * `replicate()` with `seed = TRUE` as the default
+ * `by()`
+ * `Filter()`
+
+The `rapply()` function is not supported by `futurize()`.
+
+The following **stats** package function is also supported:
+
+ * `kernapply()`
+
+
+[other parallel backends]: https://www.futureverse.org/backends.html

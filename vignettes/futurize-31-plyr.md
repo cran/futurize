@@ -1,0 +1,110 @@
+<!--
+%\VignetteIndexEntry{Parallelize 'plyr' functions}
+%\VignetteAuthor{Henrik Bengtsson}
+%\VignetteKeyword{R}
+%\VignetteKeyword{package}
+%\VignetteKeyword{plyr}
+%\VignetteKeyword{vignette}
+%\VignetteKeyword{handlers}
+%\VignetteEngine{futurize::selfonly}
+-->
+
+<div class="logos">
+<img src="../man/figures/cran-plyr-logo.svg" alt="The 'plyr' image">
+<span>+</span>
+<img src="../man/figures/futurize-logo.png" alt="The 'futurize' hexlogo">
+<span>=</span>
+<img src="../man/figures/future-logo.png" alt="The 'future' logo">
+</div>
+
+The **futurize** package allows you to easily turn sequential code
+into parallel code by piping the sequential code to the `futurize()`
+function. Easy!
+
+
+# TL;DR
+
+```r
+library(plyr)
+library(futurize)
+plan(multisession)
+
+slow_fcn <- function(x) {
+  Sys.sleep(0.1)  # emulate work
+  x^2
+}
+
+xs <- 1:1000
+ys <- llply(xs, slow_fcn) |> futurize()
+```
+
+
+# Introduction
+
+This vignette demonstrates how to use this approach to parallelize **[plyr]**
+functions such as `llply()`, `maply()`, and `ddply()`.
+
+The **plyr** `llply()` function is commonly used to apply a function to
+the elements of a list and return a list. For example, 
+
+```r
+library(plyr)
+xs <- 1:1000
+ys <- llply(xs, slow_fcn)
+```
+
+Here `llply()` evaluates sequentially, but we can easily make it
+evaluate in parallel, by using:
+
+```r
+library(futurize)
+library(plyr)
+xs <- 1:1000
+ys <- xs |> llply(slow_fcn) |> futurize()
+```
+
+This will distribute the calculations across the available parallel
+workers, given that we have set parallel workers, e.g.
+
+```r
+plan(multisession)
+```
+
+The built-in `multisession` backend parallelizes on your local
+computer and it works on all operating systems. There are [other
+parallel backends] to choose from, including alternatives to
+parallelize locally as well as distributed across remote machines,
+e.g.
+
+```r
+plan(future.mirai::mirai_multisession)
+```
+
+and
+
+```r
+plan(future.batchtools::batchtools_slurm)
+```
+
+Another example is:
+
+```r
+library(plyr)
+library(futurize)
+plan(future.mirai::mirai_multisession)
+
+ys <- llply(baseball, summary) |> futurize()
+```
+
+
+# Supported Functions
+
+The `futurize()` function supports parallelization of the following **plyr** functions:
+
+* `a_ply()`, `aaply()`, `adply()`, `alply()`
+* `d_ply()`, `daply()`, `ddply()`, `dlply()`
+* `l_ply()`, `laply()`, `ldply()`, `llply()`
+* `m_ply()`, `maply()`, `mdply()`, `mlply()`
+
+
+[plyr]: https://cran.r-project.org/package=plyr
