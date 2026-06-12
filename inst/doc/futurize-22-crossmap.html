@@ -55,7 +55,7 @@ xs &lt;- list(1:5, 1:5)
 ys &lt;- xmap(xs, ~ .y * .x) |&gt; futurize()
 </code></pre>
 <h1>Introduction</h1>
-<p>The <strong><a href="https://cran.r-project.org/package=crossmap">crossmap</a></strong> package adds to the <strong>[purrr]</strong>-set of functions. For example, <code>xmap()</code> can apply a function to every combination of elements in a list, e.g.</p>
+<p>The <strong><a href="https://cran.r-project.org/package=crossmap">crossmap</a></strong> package adds to the <strong><a href="https://cran.r-project.org/package=purrr">purrr</a></strong>-set of functions. For example, <code>xmap()</code> can apply a function to every combination of elements in a list, e.g.</p>
 <pre><code class="language-r">library(crossmap)
 
 # Multiply the 15 combinations of values in 1:3 and -2:2

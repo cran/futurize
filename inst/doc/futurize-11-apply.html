@@ -127,32 +127,27 @@ R functions. The following <strong>base</strong> package functions are supported
 <ul>
 <li><code>kernapply()</code></li>
 </ul>
-<h1>Progress Reporting via progressr</h1>
-<p>The <strong><a href="https://cran.r-project.org/package=progressr">progressr</a></strong> package is specially designed to work with the
-Futureverse ecosystem. With <strong>progressr</strong>, progress can be reported
+<h1>Progress Reporting via progressify</h1>
+<p>The <strong><a href="https://progressify.futureverse.org/">progressify</a></strong> package is specially designed to work with the
+Futureverse ecosystem. With <strong>progressify</strong>, progress can be reported
 from parallelized computations in a near-live fashion. Progress
 updates are propagated from the workers back to the main process,
 where they are relayed to provide feedback during long-running
 computations. This works because progress is signaled as R
 conditions that the <strong>future</strong> package and most future backends
-relay instantly.</p>
+relay instantly. What is unique about <strong>progressify</strong> is that it
+adds progress reporting to your existing code without you having
+to change your code.</p>
 <p>For example:</p>
 <pre><code class="language-r">library(futurize)
 plan(multisession)
-library(progressr)
-handlers(global = TRUE)
+library(progressify)
 
 xs &lt;- 1:100
-ys &lt;- local({
-  p &lt;- progressor(along = xs)
-  lapply(xs, function(x) {
-    p()
-    slow_fcn(x)
-  })
-}) |&gt; futurize()
+ys &lt;- lapply(xs, slow_fcn) |&gt; progressify() |&gt; futurize()
 </code></pre>
-<p>Note also how <code>futurize()</code> unwraps the expression - it descends
-through <code>local()</code> and <code>{ }</code> to identify the <code>lapply()</code> call to be
+<p>Note how <code>futurize()</code> unwraps the expression - it descends
+through <code>progressify()</code> to identify the <code>lapply()</code> call to be
 futurized. Using the default progress handler, the above output and
 progress reporting will appear as:</p>
 <pre><code class="language-plain">x = 1

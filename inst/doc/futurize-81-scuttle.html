@@ -52,8 +52,7 @@ function. Easy!</p>
 plan(multisession)
 library(scuttle)
 
-sce &lt;- logNormCounts(sce) |&gt; futurize()
-qc &lt;- perCellQCMetrics(sce) |&gt; futurize()
+qc &lt;- perFeatureQCMetrics(sce) |&gt; futurize()
 </code></pre>
 <h1>Introduction</h1>
 <p>This vignette demonstrates how to use this approach to parallelize
@@ -61,37 +60,22 @@ the <strong><a href="https://bioconductor.org/packages/scuttle/">scuttle</a></st
 <p>The <strong><a href="https://bioconductor.org/packages/scuttle/">scuttle</a></strong> Bioconductor package provides basic utility
 functions for single-cell RNA-seq data analysis, including quality
 control, normalization, and aggregation, which can be parallelized
-across cells.</p>
-<h2>Example: Log-normalizing counts in parallel</h2>
-<p>The <code>logNormCounts()</code> function computes log-normalized expression
-values for a <code>SingleCellExperiment</code> object:</p>
+across cells or features.</p>
+<h2>Example: Computing per-feature QC metrics in parallel</h2>
+<p>The <code>perFeatureQCMetrics()</code> function computes quality control metrics
+for each feature (gene) in a <code>SingleCellExperiment</code> object:</p>
 <pre><code class="language-r">library(scuttle)
 
 # Simulate data
-set.seed(42)
-n_genes &lt;- 200L
-n_cells &lt;- 100L
-counts &lt;- matrix(
-  rpois(n_genes * n_cells, lambda = 10),
-  nrow = n_genes,
-  ncol = n_cells,
-  dimnames = list(
-    paste0(&quot;gene&quot;, seq_len(n_genes)),
-    paste0(&quot;cell&quot;, seq_len(n_cells))
-  )
-)
+sce &lt;- mockSCE()
 
-sce &lt;- SingleCellExperiment::SingleCellExperiment(
-  assays = list(counts = counts)
-)
-
-sce &lt;- logNormCounts(sce)
+qc &lt;- perFeatureQCMetrics(sce)
 </code></pre>
-<p>Here <code>logNormCounts()</code> runs sequentially, but we can easily make it
-run in parallel by piping to <code>futurize()</code>:</p>
+<p>Here <code>perFeatureQCMetrics()</code> runs sequentially, but we can easily make
+it run in parallel by piping to <code>futurize()</code>:</p>
 <pre><code class="language-r">library(futurize)
 
-sce &lt;- logNormCounts(sce) |&gt; futurize()
+qc &lt;- perFeatureQCMetrics(sce) |&gt; futurize()
 </code></pre>
 <p>This will distribute the work across the available parallel workers,
 given that we have set up parallel workers, e.g.</p>
@@ -111,30 +95,36 @@ e.g.</p>
 <p>The following <strong>scuttle</strong> functions are supported by <code>futurize()</code>:</p>
 <ul>
 <li><code>calculateAverage()</code></li>
+<li><code>perFeatureQCMetrics()</code></li>
+<li><code>numDetectedAcrossFeatures()</code></li>
+<li><code>summarizeAssayByGroup()</code></li>
+<li><code>medianSizeFactors()</code></li>
+<li><code>computeMedianFactors()</code></li>
+<li><code>pooledSizeFactors()</code></li>
+<li><code>computePooledFactors()</code></li>
+<li><code>fitLinearModel()</code></li>
+</ul>
+<p>The following <strong>scuttle</strong> functions are deprecated in <strong>scuttle</strong> (&gt;=
+1.22) in favor of counter-part functions in Bioconductor package
+<strong><a href="https://bioconductor.org/packages/scrapper/">scrapper</a></strong>. Support for <code>futurize()</code> of the these deprecated
+functions remains, but will be phased out;</p>
+<ul>
 <li><code>logNormCounts()</code></li>
 <li><code>normalizeCounts()</code></li>
 <li><code>perCellQCMetrics()</code></li>
-<li><code>perFeatureQCMetrics()</code></li>
 <li><code>addPerCellQCMetrics()</code></li>
 <li><code>addPerFeatureQCMetrics()</code></li>
 <li><code>addPerCellQC()</code></li>
 <li><code>addPerFeatureQC()</code></li>
 <li><code>numDetectedAcrossCells()</code></li>
-<li><code>numDetectedAcrossFeatures()</code></li>
 <li><code>sumCountsAcrossCells()</code></li>
 <li><code>sumCountsAcrossFeatures()</code></li>
-<li><code>summarizeAssayByGroup()</code></li>
 <li><code>aggregateAcrossCells()</code></li>
 <li><code>aggregateAcrossFeatures()</code></li>
 <li><code>librarySizeFactors()</code></li>
 <li><code>computeLibraryFactors()</code></li>
 <li><code>geometricSizeFactors()</code></li>
 <li><code>computeGeometricFactors()</code></li>
-<li><code>medianSizeFactors()</code></li>
-<li><code>computeMedianFactors()</code></li>
-<li><code>pooledSizeFactors()</code></li>
-<li><code>computePooledFactors()</code></li>
-<li><code>fitLinearModel()</code></li>
 </ul>
 </body>
 </html>

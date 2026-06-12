@@ -53,9 +53,7 @@ library(vegan)
 
 data(dune)
 data(dune.env)
-dune.mrpp &lt;- with(dune.env, {
-  mrpp(dune, Management) |&gt; futurize()
-})
+dune.mrpp &lt;- with(dune.env, { mrpp(dune, Management) }) |&gt; futurize()
 </code></pre>
 <h1>Introduction</h1>
 <p>The <strong><a href="https://cran.r-project.org/package=vegan">vegan</a></strong> package provides methods for community and
@@ -69,9 +67,7 @@ library(vegan)
 
 data(dune)
 data(dune.env)
-dune.mrpp &lt;- with(dune.env, {
-  mrpp(dune, Management) |&gt; futurize()
-})
+dune.mrpp &lt;- with(dune.env, { mrpp(dune, Management) }) |&gt; futurize()
 </code></pre>
 <p>This will parallelize the computations, given that we have set up
 parallel workers, e.g.</p>
@@ -107,7 +103,7 @@ res &lt;- anova(ord, permutations = 99) |&gt; futurize()
 <li><code>adonis2()</code></li>
 <li><code>anova()</code> for 'cca'</li>
 <li><code>anosim()</code></li>
-<li><code>cascadeKM()</code></li>
+<li><code>cascadeKM()</code> with <code>seed = TRUE</code> as the default</li>
 <li><code>estaccumR()</code></li>
 <li><code>mantel()</code></li>
 <li><code>mantel.partial()</code></li>

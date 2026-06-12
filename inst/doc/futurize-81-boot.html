@@ -111,7 +111,33 @@ lynx_fun &lt;- function(tsb) {
     c(ar_fit$order, mean(tsb), tsb)
 }
 
-lynx_boot &lt;- tsboot(log(lynx), lynx_fun, R = 99, l = 20, sim = &quot;geom&quot;) |&gt; futurize()
+lynx_boot &lt;- tsboot(log(lynx), lynx_fun, R = 999, l = 20, sim = &quot;geom&quot;) |&gt; futurize()
+</code></pre>
+<h2>Example: Bootstrap for censored data</h2>
+<p>The <code>censboot()</code> function is used for bootstrap sampling of censored
+data, which is common in survival analysis. For example, using the
+<code>aml</code> data from the <strong><a href="https://cran.r-project.org/package=boot">boot</a></strong> package:</p>
+<pre><code class="language-r">library(futurize)
+plan(multisession)
+library(boot)
+library(survival)
+
+data(aml, package = &quot;boot&quot;)
+
+aml_fun &lt;- function(data) {
+    surv &lt;- survfit(Surv(time, cens) ~ group, data = data)
+    out &lt;- NULL
+    st &lt;- 1
+    for (s in seq_along(surv$strata)) {
+        inds &lt;- st:(st + surv$strata[s] - 1)
+        md &lt;- min(surv$time[inds[1-surv$surv[inds] &gt;= 0.5]])
+        st &lt;- st + surv$strata[s]
+        out &lt;- c(out, md)
+    }
+    out
+}
+
+aml_boot &lt;- censboot(aml, aml_fun, R = 999, strata = aml$group) |&gt; futurize()
 </code></pre>
 <h1>Supported Functions</h1>
 <p>The following <strong>boot</strong> functions are supported by <code>futurize()</code>:</p>
