@@ -55,6 +55,15 @@ library(GSVA)
 param &lt;- gsvaParam(expr, geneSets)
 es &lt;- gsva(param) |&gt; futurize()
 </code></pre>
+<h1>Deprecation Warning</h1>
+<p>As of <strong>GSVA</strong> (&gt;= 2.7.0), futurization is no longer supported. An
+informative error message will produced, if attempted.</p>
+<p>The reason for this is that <strong>GSVA</strong> has moved to using
+<code>BiocParallel::bpiterate()</code> internally. That call is not supported by
+the <code>BiocParallel::DoparParam()</code> backend, which is the only one that
+currently bridges Futureverse and BiocParallel. See
+<a href="https://github.com/futureverse/futurize/issues/14">https://github.com/futureverse/futurize/issues/14</a> for details and
+status updates.</p>
 <h1>Introduction</h1>
 <p>This vignette demonstrates how to use this approach to parallelize
 the <strong><a href="https://bioconductor.org/packages/GSVA/">GSVA</a></strong> functions.</p>
@@ -117,12 +126,24 @@ es &lt;- gsva(plageParam(expr, geneSets)) |&gt; futurize()
 ## Combined z-score method
 es &lt;- gsva(zscoreParam(expr, geneSets)) |&gt; futurize()
 </code></pre>
+<h2>Rank-based functions</h2>
+<p>As of <strong>GSVA</strong> (&gt;= 2.7.5), the two-step <code>gsvaRanks()</code> + <code>gsvaScores()</code>
+pipeline is deprecated in favor of a three-step <code>gsvaRowNorm()</code> +
+<code>gsvaColRanks()</code> + <code>gsvaColScores()</code> pipeline. Each of these steps can
+be parallelized with <code>futurize()</code>:</p>
+<pre><code class="language-r">gsvarnorm &lt;- gsvaRowNorm(param) |&gt; futurize()
+gsvaranks &lt;- gsvaColRanks(gsvarnorm) |&gt; futurize()
+es &lt;- gsvaColScores(gsvaranks, geneSets(param)) |&gt; futurize()
+</code></pre>
 <h1>Supported Functions</h1>
 <p>The following <strong>GSVA</strong> functions are supported by <code>futurize()</code>:</p>
 <ul>
-<li><code>gsva()</code> - requires <strong>GSVA</strong> (&gt;= 2.4.2 or &gt;= 2.5.7)</li>
+<li><code>gsva()</code></li>
 <li><code>gsvaRanks()</code></li>
 <li><code>gsvaScores()</code></li>
+</ul>
+<!-- * `gsvaRowNorm()`, `gsvaColRanks()`, and `gsvaColScores()` (**GSVA** >= 2.7.5) -->
+<ul>
 <li><code>spatCor()</code></li>
 </ul>
 </body>

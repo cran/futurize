@@ -178,21 +178,28 @@ the one defined by <strong>BiocGenerics</strong>, which masks the one in
 <pre><code class="language-r">find(&quot;lapply&quot;)
 #&gt; [1] &quot;package:BiocGenerics&quot; &quot;package:base&quot; 
 </code></pre>
-<p>This matters in the context of <strong>futurize</strong>. In a vanilla R session,</p>
+<p>This matters in the context of <strong>futurize</strong>. With <strong>BiocGenerics</strong>
+attached, <code>futurize()</code> identifies which method <code>lapply()</code> dispatches
+to. If it is the <strong>base</strong> fallback, as for <code>1:3</code>, then</p>
 <pre><code class="language-r">y &lt;- lapply(1:3, sqrt) |&gt; futurize()
 </code></pre>
-<p>is identical to</p>
-<pre><code class="language-r">y &lt;- base::lapply(1:3, sqrt) |&gt; futurize()
+<p>is futurized as if we had called <code>base::lapply(1:3, sqrt)</code>. However,
+if the object has its own <code>lapply()</code> method, such as a <code>List</code> of the
+<strong>S4Vectors</strong> package, then that method cannot be futurized, e.g.</p>
+<pre><code class="language-r">library(S4Vectors)
+x &lt;- List(a = 1:3, b = 4:6)
+y &lt;- lapply(x, sum) |&gt; futurize()
 </code></pre>
-<p>However, with <strong>BiocGenerics</strong> attached, it is instead identical to:</p>
-<pre><code class="language-r">y &lt;- BiocGenerics::lapply(1:3, sqrt) |&gt; futurize()
+<p>results in:</p>
+<pre><code>Error: Do not know how to futurize lapply(), because it dispatches to
+the S4 method of package 'S4Vectors' for class 'SimpleList', which is
+not supported. If you meant base::lapply(), call it explicitly, e.g.
+'base::lapply(...) |&gt; futurize()', possibly after coercing the first
+argument to a basic R object
 </code></pre>
-<p>which results in:</p>
-<pre><code>Error in transpilers_for_package(type = type, package = ns_name, action = &quot;make&quot;,  : 
-  There are no factory functions for creating 'futurize::add-on' transpilers for package 'BiocGenerics'
-</code></pre>
-<p>The solution is to specify that it is the <strong>base</strong> version we wish to futurize, i.e.</p>
-<pre><code class="language-r">y &lt;- base::lapply(1:3, sqrt) |&gt; futurize()
+<p>The solution is to coerce the object to a regular list and specify
+that it is the <strong>base</strong> version we wish to futurize, i.e.</p>
+<pre><code class="language-r">y &lt;- base::lapply(as.list(x), sum) |&gt; futurize()
 </code></pre>
 </body>
 </html>
